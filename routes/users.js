@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('./users/model/User.js')
 const bcrypt = require("bcryptjs");
+const expressJwt = require('express-jwt')
 const jwt = require("jsonwebtoken");
 
 router.post('/login', async(req, res, next) =>{
@@ -28,13 +29,13 @@ router.post('/login', async(req, res, next) =>{
         expiresIn: "7d",
       });
 
-      res.cookie("jwt-cookie-expense", jwtToken, {
+      res.cookie("jwt-access-token", jwtToken, {
         expires: new Date(Date.now() + 60000 * 15),
         httpOnly: false,
         secure: process.env.NODE_ENV === "production" ? true : false,
       });
 
-      res.cookie("jwt-cookie-refresh", jwtRefreshToken, {
+      res.cookie("jwt-refresh-token", jwtRefreshToken, {
         expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         httpOnly: false,
         secure: process.env.NODE_ENV === "production" ? true : false,
@@ -78,5 +79,20 @@ router.post('/register', async (req, res) => {
       });
     }
 });
+
+router.get('/user-info', expressJwt({
+  secret: process.env.JWT_USER_SECRET_KEY,
+  userProperty: 'auth',
+}),async (req,res) => {
+  let foundUser = await User.findById(req.auth._id).select("-__v -userCreated -password")
+  res.status(200).json(foundUser)
+})
+
+router.get('/logout', (req,res) => {
+  res.clearCookie('jwt-access-token')
+  res.clearCookie('jwt-refresh-token')
+  res.status(200).json('success-logout')
+})
+
 
 module.exports = router;

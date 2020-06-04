@@ -8,6 +8,9 @@ const CryptoSchema = new mongoose.Schema({
    amount: {
       type: Number,
    },
+   owner: {
+      type: mongoose.Schema.ObjectId, ref: "User"
+   }
 });
 
 module.exports = mongoose.model("Crypto", CryptoSchema);
