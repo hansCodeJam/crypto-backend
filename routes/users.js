@@ -42,12 +42,11 @@ router.post('/login', async(req, res, next) =>{
 
       res.json({ user: foundUser });
     } else {
-      throw Error("Check your email and password.");
+      throw "Check your email and/or password.";
     }
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
     res.status(500).json({
-      message: e,
+      message: err,
     });
   }
 });
@@ -70,10 +69,12 @@ router.post('/register', async (req, res) => {
       res.json({
         message: 'User created'
       });
-    } catch (e) {
-      console.log(e)
+    } catch (err) {
+      console.log(err)
+      let message = Object.keys(err.keyValue)[0] === 'username' || Object.keys(err.keyValue)[0] === 'email' 
+        ? `${Object.keys(err.keyValue)[0]} already exists` : 'password has to contain: min eight characters, one uppercase, one lowercase letter, one number and one special character'
       res.status(500).json({
-        message: e,
+        message
       });
     }
 });
